@@ -14,6 +14,8 @@ Projeto foi feito inicialmente utilizando a IDE Apache NetBeans 12.5 onde foram 
 maioria dos objetos da interface, depois continuamos a implementação no VSCode
 download: https://netbeans.apache.org/download/nb125/nb125.html
 
+###### Executar o programa apartir do Restaurante.java ######
+
 Em relação aos padrões de projeto:
 
 Padrão de projeto criacional escolhido foi o Singleton, onde utilizamos na classe
