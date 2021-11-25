@@ -8,9 +8,10 @@ package restaurante;
  *
  * @author Thiago Henrique Cruz de Moura - RA: 2020023875, Thaís Barros Alvim - RA: 2020008082 
  */
-public class ProdutoClass {    
+public class ProdutoClass{    
     double preco;
     String nome;
+
     
     /**
      * Atribui aos atributos do Objeto valores específicos
@@ -30,4 +31,6 @@ public class ProdutoClass {
         this.nome = obj.nome;
         this.preco = obj.preco;
     }
+
+    
 }

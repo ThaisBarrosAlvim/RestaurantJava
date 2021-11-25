@@ -10,9 +10,11 @@ import javax.swing.JOptionPane;
 /**
  * @author Thiago Henrique Cruz de Moura - RA: 2020023875, Thaís Barros Alvim - RA: 2020008082 
  */
-public class Restaurant extends javax.swing.JFrame {
-    
+public class TelaRestaurante extends javax.swing.JFrame {
+     private static TelaRestaurante instance;
+
      ArrayList<MesaClass> mesas = new ArrayList<>();
+     ArrayList<ProdutoClass> produtos = new ArrayList<>();
      ArrayList<PedidoClass> PedidoEntregue = new ArrayList<>();
      
      //Numero de Pedidos
@@ -20,6 +22,9 @@ public class Restaurant extends javax.swing.JFrame {
      
      //Numero maximo de pedidos por mesa
      public static final int MAX_PEDIDOS = 3;
+
+     // Numero maximo de produtos na classe
+     public static final int MAX_PRODUTOS = 4;
      
      //Numero maximo de mesas
      public static final int MAX_MESAS = 3;
@@ -27,27 +32,33 @@ public class Restaurant extends javax.swing.JFrame {
      //Seleção
      int SelectionMesas = -1;
      
-     //Status
-     String STATUS_P = "Pronto", STATUS_A = "Aguardando", STATUS_E = "Entregue";
      
      // Telas
      public static final int TELA_PEDIDO1=0, TELA_PEDIDO2=1, TELA_PEDIDO3=2,
                     TELA_MESAS = 3, TELA_PEDIDOS = 4, TELA_PAGAMENTOS = 5,
                     TELA_PAGAMENTO_INT = 6;
-     // Produto 1
-     ProdutoClass PRODUTO1 = new ProdutoClass("Refrigerante", 5.0);
-     // Produto 2
-     ProdutoClass PRODUTO2 = new ProdutoClass("Hamburger", 9.0);
-     // Produto 3
-     ProdutoClass PRODUTO3 = new ProdutoClass("Sorvete", 2.0);
-     // Produto 4
-     ProdutoClass PRODUTO4 = new ProdutoClass("Salada", 6.0);
      
      /**
      * Creates new form Pedido 
      **/
-    public Restaurant(){
+    public TelaRestaurante(){
        initComponents();
+    }
+    
+    public TelaRestaurante(ArrayList<ProdutoClass> produtos) {
+        this.produtos = new ArrayList<ProdutoClass>(produtos.subList(0, MAX_PRODUTOS));
+        if (produtos.size() > MAX_PRODUTOS){
+            JOptionPane.showMessageDialog(null, String.format("Você excedeu o tamanho maximo de produtos, pegamos apenas os " + MAX_PRODUTOS + " primeiros."));
+        }
+
+        initComponents();
+    }
+
+    public static TelaRestaurante getInstance(ArrayList<ProdutoClass> produtos) {
+        if (instance == null) {
+            instance = new TelaRestaurante(produtos);
+        }
+        return instance;
     }
 
     private void clearTelaPedidos() {
@@ -61,7 +72,7 @@ public class Restaurant extends javax.swing.JFrame {
         MesaSpinner.setValue(0);
 
         // Volta para pagina inicial
-        RestaurantePainel.setSelectedIndex(Restaurant.TELA_PEDIDO1);
+        RestaurantePainel.setSelectedIndex(TelaRestaurante.TELA_PEDIDO1);
     }
 
     private void pagePagamentoInterna(MesaClass mesa){
@@ -71,25 +82,11 @@ public class Restaurant extends javax.swing.JFrame {
         pedido1.setVisible(false);  
         pedido2.setVisible(false);  
         pedido3.setVisible(false);  
-        double precoPedido;
-        double precoTotal = 0.0;
-        String prodPedido;
         titulo.setText("Mesa " + mesa.numero);
+        
         for (PedidoClass pedido : mesa.pedidos){
-            precoPedido = 0.0;
-            prodPedido = "";
-            for (ProdutoClass produto : pedido.produtos){
-                precoPedido += produto.preco;
-                if (pedido.produtos.indexOf(produto) == (pedido.produtos.size() -1)){
-                    prodPedido += produto.nome;
-                }else{
-                    prodPedido += produto.nome + ", ";
-                }
-            }
-            
-            precoTotal += precoPedido;
-            
-            
+            double precoPedido = pedido.valorTotal;
+            String prodPedido = pedido.getFullName();
             int index = mesa.pedidos.indexOf(pedido);
             switch (index) {
                 case 0:
@@ -113,7 +110,7 @@ public class Restaurant extends javax.swing.JFrame {
             }
         }
         
-        precoFull.setText("R$ " + precoTotal);
+        precoFull.setText("R$ " + mesa.precoTotal);
     }
     
     private void pagePagamento(){
@@ -773,7 +770,7 @@ public class Restaurant extends javax.swing.JFrame {
         // Adiciona a mesa caso não encontre nas mesas existentes
         if (mesaSelecionada == null){
             // antes valida se já chegou no limite de mesas
-            if (this.mesas.size() == Restaurant.MAX_MESAS){
+            if (this.mesas.size() == TelaRestaurante.MAX_MESAS){
                 JOptionPane.showMessageDialog(null,
                     "Limite de mesas atingido, aguarde o pagamento de alguma"
                     + " mesa para liberar uma mesa.");
@@ -785,7 +782,7 @@ public class Restaurant extends javax.swing.JFrame {
         }
 
         //Valida se pode adicionar um pedido a mesa
-        if (mesaSelecionada.pedidos.size() == Restaurant.MAX_PEDIDOS){
+        if (mesaSelecionada.pedidos.size() == TelaRestaurante.MAX_PEDIDOS){
             JOptionPane.showMessageDialog(null,
                 "Não é permitido adição de mais pedidos nesta mesa,"
                 + " limite atingido.");
@@ -797,22 +794,21 @@ public class Restaurant extends javax.swing.JFrame {
 
         // Adiciona os produtos ao pedido
         if (Product1.isSelected()){
-            pedido.produtos.add(new ProdutoClass(PRODUTO1));
+            pedido.addProduto(new ProdutoClass(this.produtos.get(0)));
         }
         if (Product2.isSelected()){
-            pedido.produtos.add(new ProdutoClass(PRODUTO2));
+            pedido.addProduto(new ProdutoClass(this.produtos.get(1)));
         }
         if (Product3.isSelected()){
-            pedido.produtos.add(new ProdutoClass(PRODUTO3));
+            pedido.addProduto(new ProdutoClass(this.produtos.get(2)));
         }
         if (Product4.isSelected()){
-            pedido.produtos.add(new ProdutoClass(PRODUTO4));
+            pedido.addProduto(new ProdutoClass(this.produtos.get(3)));
         }
         //Adiciona um número ao pedido
         pedido.setNum(++REQUESTS_NUM);
         // Adiciona os pedidos na mesa
-        mesaSelecionada.pedidos.add(pedido);
-        System.out.println("Adicionou pedido: " + pedido);
+        mesaSelecionada.addPedido(pedido);
         
         //Adiciona a mesa à Lista de mesas
         if(!mesaSelecionada.pedidos.isEmpty()){
@@ -831,10 +827,10 @@ public class Restaurant extends javax.swing.JFrame {
     private void EnterButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_EnterButtonActionPerformed
         // Vai para pagina de seleção
         RestaurantePainel.setSelectedIndex(TELA_PEDIDO2);
-        Product1.setText(PRODUTO1.nome);
-        Product2.setText(PRODUTO2.nome);
-        Product3.setText(PRODUTO3.nome);
-        Product4.setText(PRODUTO4.nome);
+        Product1.setText(this.produtos.get(0).nome);
+        Product2.setText(this.produtos.get(1).nome);
+        Product3.setText(this.produtos.get(2).nome);
+        Product4.setText(this.produtos.get(3).nome);
     }//GEN-LAST:event_EnterButtonActionPerformed
 
     private void BotaoMesasActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_BotaoMesasActionPerformed
@@ -844,14 +840,18 @@ public class Restaurant extends javax.swing.JFrame {
 
     private void LPedidosMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_LPedidosMouseClicked
         //Muda status do pedido pra pronto, caso em aguardo
-        if(mesas.get(SelectionMesas).pedidos.get(LPedidos.getSelectedIndex()).status.contains(STATUS_A)){
+        if(mesas.get(SelectionMesas).pedidos.get(LPedidos.getSelectedIndex()).status.contains(PedidoClass.STATUS_A)){
             if(JOptionPane.showConfirmDialog(LPedidos, "Deseja marcar o pedido como pronto?", "Pronto", 0) == 0)
-                mesas.get(SelectionMesas).pedidos.get(LPedidos.getSelectedIndex()).status = STATUS_P;
+                mesas.get(SelectionMesas).pedidos.get(LPedidos.getSelectedIndex()).status = PedidoClass.STATUS_P;
         }
         //Muda status do pedido pra entregue, caso pronto
-        else if(mesas.get(SelectionMesas).pedidos.get(LPedidos.getSelectedIndex()).status.contains(STATUS_P)){
+        else if(mesas.get(SelectionMesas).pedidos.get(LPedidos.getSelectedIndex()).status.contains(
+                PedidoClass.STATUS_P)){
             if(JOptionPane.showConfirmDialog(LPedidos, "Deseja entregar o pedido?", "Entregar", 0) == 0){
-                mesas.get(SelectionMesas).pedidos.get(LPedidos.getSelectedIndex()).status = STATUS_E;
+                MesaClass mesa = mesas.get(SelectionMesas);
+                PedidoClass pedido = mesa.pedidos.get(LPedidos.getSelectedIndex());
+                pedido.status = PedidoClass.STATUS_E;
+                pedido.fecharPedido();
             }
         }
     }//GEN-LAST:event_LPedidosMouseClicked
@@ -890,14 +890,13 @@ public class Restaurant extends javax.swing.JFrame {
         mesaPagamento = titulo.getText();
         for (MesaClass mesa : mesas){
             if (mesaPagamento.equals("Mesa " + mesa.numero)){
-                for (PedidoClass pedido : mesa.pedidos){
-                    if (!pedido.status.equals(STATUS_E)){
-                        JOptionPane.showMessageDialog(null,
-                            "Todos os pedidos devem estar entregues para "
-                            + "pagamento!");
-                        return;
-                    }
+                if (!mesa.prontoPagamento){
+                    JOptionPane.showMessageDialog(null,
+                        "Todos os pedidos devem estar entregues para "
+                        + "pagamento!");
+                    return;
                 }
+                
                 mesas.remove(mesa);
                 LMesas.setModel(new javax.swing.AbstractListModel<String>(){
                     ArrayList<MesaClass> M = mesas;
@@ -911,7 +910,7 @@ public class Restaurant extends javax.swing.JFrame {
         }
 
         JOptionPane.showMessageDialog(null,"Pagamento realizado!");
-        RestaurantePainel.setSelectedIndex(Restaurant.TELA_PAGAMENTOS);
+        RestaurantePainel.setSelectedIndex(TelaRestaurante.TELA_PAGAMENTOS);
         pagePagamento();
     }//GEN-LAST:event_botaoPagarActionPerformed
 
@@ -922,7 +921,7 @@ public class Restaurant extends javax.swing.JFrame {
 
     private void GoToPagMesasActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_GoToPagMesasActionPerformed
         //Vai pra tela de pagamento
-        RestaurantePainel.setSelectedIndex(Restaurant.TELA_PAGAMENTOS);
+        RestaurantePainel.setSelectedIndex(TelaRestaurante.TELA_PAGAMENTOS);
     }//GEN-LAST:event_GoToPagMesasActionPerformed
 
     
@@ -943,7 +942,7 @@ public class Restaurant extends javax.swing.JFrame {
                 }
             }
         } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(Restaurant.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(TelaRestaurante.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
          //</editor-fold>
          //</editor-fold>
@@ -953,7 +952,7 @@ public class Restaurant extends javax.swing.JFrame {
 
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(() -> {
-            new Restaurant().setVisible(true);
+            new TelaRestaurante().setVisible(true);
         });
     }
 
