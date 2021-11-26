@@ -34,8 +34,8 @@ Padrão de projeto comportamental é o Observer, o nosso EventManager está na c
  pedido ficar pronto, ele podera notificar a mesa onde ele se encontra, assim
  poderemos saber se a mesa está pronta para o pagamento ou não. Toda vez que 
  incluimos um pedido em um objeto MesaClass, nos fazemos o subscribe da mesa a esse
- pedido. Toda vez que um pedido fica com status entregue ele notifica as mesas que
- estão inscritas no mesmo.
+ pedido. Toda vez que um pedido fica com status entregue ele notifica a mesa que
+ está inscrita no mesmo.
 
 Depois foi portado para que possa ser executado no Visual Studio Code para ser enviado.
 obs: no Visual Studio Code utilizamos o seguinte pack de extenções:
